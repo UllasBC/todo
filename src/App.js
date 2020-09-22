@@ -1,12 +1,28 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./App.css";
 //import { InputTextBox } from "./components/InputTextBox";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
 
+
 function App() {
-  const [toDo, setToDo] = useState("");
-  const [itemList, setItemList] = useState([]);
+  const [toDo, setToDo] = useState('');
+  const [itemList, setItemList] = useState(()=>{
+    let itemStr = localStorage.getItem('toDo');
+    if(itemStr == null){
+      return [];
+    }else{
+      let item = JSON.parse(itemStr);
+      return item;
+    }
+  });
+
+  // const setItemList = (list)=>{
+  //   setItemList(list);
+  //   //localStorage.setItem('toDo',JSON.stringify(list))
+  // }
+
+  useEffect(()=>{localStorage.setItem('toDo',JSON.stringify(itemList))},[itemList])
 
   const onInputChange = (evt) => {
     setToDo(evt.target.value);
@@ -28,6 +44,11 @@ function App() {
     setItemList(list);
 
     console.log("OnDelete Function called");
+  };
+
+  const onClearBtnClick=()=>{
+    setItemList([]);   
+
   };
 
   console.log(itemList);
@@ -76,6 +97,9 @@ function App() {
             </Button>
           </div>
         ))}
+      </div>
+      <div>
+        <Button variant="contained" color="primary" onClick={onClearBtnClick}>Clear All</Button>
       </div>
     </div>
   );
