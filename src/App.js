@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import "./App.css";
 //import { InputTextBox } from "./components/InputTextBox";
 import Button from "@material-ui/core/Button";
@@ -17,37 +17,35 @@ function App() {
     }
   });
 
-  // const setItemList = (list)=>{
-  //   setItemList(list);
-  //   //localStorage.setItem('toDo',JSON.stringify(list))
-  // }
-
-  useEffect(()=>{localStorage.setItem('toDo',JSON.stringify(itemList))},[itemList])
+  const updateItemList = (list)=>{
+    setItemList(list);
+    localStorage.setItem('toDo',JSON.stringify(list))
+  }
 
   const onInputChange = (evt) => {
     setToDo(evt.target.value);
   };
 
   const onAddItemClick = () => {
-    setItemList(itemList.concat({ text: toDo, completed: false }));
+    updateItemList(itemList.concat({ text: toDo, completed: false }));
   };
 
   const onTaskDone = (index) => {
     let list = [...itemList];
     list[index].completed = !list[index].completed;
-    setItemList(list);
+    updateItemList(list);
   };
 
   const onDeleteTask = (index) => {
     let list = [...itemList];
     list.splice(index, 1);
-    setItemList(list);
+    updateItemList(list);
 
     console.log("OnDelete Function called");
   };
 
   const onClearBtnClick=()=>{
-    setItemList([]);   
+    updateItemList([]);   
 
   };
 
