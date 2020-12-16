@@ -1,106 +1,70 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { Button, FormControl, InputLabel, Input } from "@material-ui/core";
+import Todo from "../src/components/Todo";
+import db from "./firebase";
 import "./App.css";
-//import { InputTextBox } from "./components/InputTextBox";
-import Button from "@material-ui/core/Button";
-import TextField from "@material-ui/core/TextField";
 
+import firebase from 'firebase';
 
 function App() {
-  const [toDo, setToDo] = useState('');
-  const [itemList, setItemList] = useState(()=>{
-    let itemStr = localStorage.getItem('toDo');
-    if(itemStr == null){
-      return [];
-    }else{
-      let item = JSON.parse(itemStr);
-      return item;
-    }
-  });
+  const [todos, setToDos] = useState([]);
+  const [input, setInput] = useState('');
 
-  // const setItemList = (list)=>{
-  //   setItemList(list);
-  //   //localStorage.setItem('toDo',JSON.stringify(list))
-  // }
+  //When the app loads, need to listen to the database and fetch new todos
+  useEffect(() => {
+    db.collection("todos")
+      .orderBy("timestamp", "desc")
+      .onSnapshot((snapshot) => {
+        //console.log(snapshot.docs.map(doc=>doc.data));
+        setToDos(
+          snapshot.docs.map((doc) => ({ id: doc.id, todo: doc.data().todo }))
+        );
+      });
+  }, []);
 
-  useEffect(()=>{localStorage.setItem('toDo',JSON.stringify(itemList))},[itemList])
-
-  const onInputChange = (evt) => {
-    setToDo(evt.target.value);
+  const onInput = (evt) => {
+    setInput(evt.target.value);
   };
 
-  const onAddItemClick = () => {
-    setItemList(itemList.concat({ text: toDo, completed: false }));
+  const onAddBtnClick = (evt) => {
+    evt.preventDefault();
+
+    db.collection("todos").add({
+      todo: input,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+
+    setInput("");
   };
+  //console.log(todos);
 
-  const onTaskDone = (index) => {
-    let list = [...itemList];
-    list[index].completed = !list[index].completed;
-    setItemList(list);
-  };
-
-  const onDeleteTask = (index) => {
-    let list = [...itemList];
-    list.splice(index, 1);
-    setItemList(list);
-
-    console.log("OnDelete Function called");
-  };
-
-  const onClearBtnClick=()=>{
-    setItemList([]);   
-
-  };
-
-  console.log(itemList);
   return (
-    <div className="App">
-      <div className="body-appear">
-        <TextField
-          id="outlined-basic"
-          label="Task"
-          variant="outlined"
-          onChange={onInputChange}
-          value={toDo}
-        />
+    <div className="app">
+      <h1>TO-DO 📋</h1>
 
-        <span>
-          <Button variant="contained" color="primary" onClick={onAddItemClick}>
-            Add To DO
-          </Button>
-        </span>
-      </div>
-      <div>
-        {itemList.map((item, index) => (
-          <div key={index}>
-            <input
-              type="checkbox"
-              onChange={() => {
-                onTaskDone(index);
-              }}
-            />
-            <span
-              style={{
-                textDecoration: item.completed ? "line-through" : "none",
-              }}
-            >
-              {item.text}
-            </span>
-            <span>{item.completed}</span>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => {
-                onDeleteTask(index);
-              }}
-            >
-              Delete
-            </Button>
-          </div>
+      <form>
+        <FormControl>
+          <InputLabel htmlFor="my-input">Write Todo</InputLabel>
+          <Input value={input} onChange={onInput} />
+        </FormControl>
+
+        <Button
+          disabled={!input}
+          type="submit"
+          onClick={onAddBtnClick}
+          variant="contained"
+          color="primary"
+        >
+          Add Todo
+        </Button>
+      </form>
+
+      <ul>
+        {todos.map((todo) => (
+          // <li key={index}>{item}</li>
+          <Todo key={todo.id} todo={todo} />
         ))}
-      </div>
-      <div>
-        <Button variant="contained" color="primary" onClick={onClearBtnClick}>Clear All</Button>
-      </div>
+      </ul>
     </div>
   );
 }

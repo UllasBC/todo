@@ -1,0 +1,9 @@
+.todo__list{
+    display: flex;    
+    justify-content:space-evenly;
+
+}
+
+input, button {
+    margin: 5px;
+}
